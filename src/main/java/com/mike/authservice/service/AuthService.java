@@ -4,6 +4,7 @@ import com.mike.authservice.dto.RegisterRequest;
 import com.mike.authservice.dto.AuthResponse;
 import com.mike.authservice.model.User;
 import com.mike.authservice.repository.UserRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -14,8 +15,11 @@ public class AuthService {
 
     private final UserRepository userRepository;
 
-    public AuthService(UserRepository userRepository){
+    private final PasswordEncoder passwordEncoder;
+
+    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder){
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public AuthResponse register(RegisterRequest request) {
@@ -24,10 +28,12 @@ public class AuthService {
         return new AuthResponse("User already exists");
         }
 
+        String encodedPassword = passwordEncoder.encode(request.getPassword());
+
         User user = new User(
                 UUID.randomUUID(),
                 request.getEmail(),
-                request.getPassword(),
+                encodedPassword,
                 LocalDateTime.now()
         );
 
@@ -46,7 +52,7 @@ public class AuthService {
 
         User user = userOptional.get();
 
-        if (!user.getPasswordHash().equals(request.getPassword())) {
+        if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
             return new AuthResponse("invalid credentials");
         }
 

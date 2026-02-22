@@ -4,6 +4,8 @@ import com.mike.authservice.dto.RegisterRequest;
 import com.mike.authservice.dto.AuthResponse;
 import com.mike.authservice.model.User;
 import com.mike.authservice.repository.UserRepository;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -22,13 +24,11 @@ public class AuthService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public AuthResponse register(RegisterRequest request) {
-
-        System.out.println("Repo class:" + userRepository.getClass());
-        System.out.println("Repo count:" + userRepository.count());
+    public ResponseEntity<AuthResponse> register(RegisterRequest request) {
 
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-        return new AuthResponse("User already exists");
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(new AuthResponse("User already exists"));
         }
 
         String encodedPassword = passwordEncoder.encode(request.getPassword());
@@ -42,23 +42,27 @@ public class AuthService {
 
         userRepository.save(user);
 
-        return new AuthResponse("User registered successfully");
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(new AuthResponse("User registered successfully"));
     }
 
-    public AuthResponse login(RegisterRequest request) {
+    public ResponseEntity<AuthResponse> login(RegisterRequest request) {
 
         var userOptional = userRepository.findByEmail(request.getEmail());
 
         if (userOptional.isEmpty()) {
-            return new AuthResponse("invalid credentials");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new AuthResponse("invalid credentials"));
         }
 
         User user = userOptional.get();
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
-            return new AuthResponse("invalid credentials");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new AuthResponse("invalid credentials"));
         }
 
-        return new AuthResponse("Login successful");
+        return ResponseEntity.ok(
+                new AuthResponse("Login successful"));
     }
 }

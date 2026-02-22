@@ -3,7 +3,9 @@ package com.mike.authservice.controller;
 import com.mike.authservice.dto.AuthResponse;
 import com.mike.authservice.dto.RegisterRequest;
 import com.mike.authservice.service.AuthService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -16,12 +18,12 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public  AuthResponse register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
         return authService.register(request);
     }
 
     @PostMapping("/login")
-    public AuthResponse login(@RequestBody RegisterRequest request) {
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody RegisterRequest request) {
         return authService.login(request);
     }
 }

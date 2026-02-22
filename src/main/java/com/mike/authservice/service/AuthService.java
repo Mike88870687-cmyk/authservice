@@ -24,6 +24,9 @@ public class AuthService {
 
     public AuthResponse register(RegisterRequest request) {
 
+        System.out.println("Repo class:" + userRepository.getClass());
+        System.out.println("Repo count:" + userRepository.count());
+
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
         return new AuthResponse("User already exists");
         }

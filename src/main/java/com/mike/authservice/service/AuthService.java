@@ -4,6 +4,7 @@ import com.mike.authservice.dto.RegisterRequest;
 import com.mike.authservice.dto.AuthResponse;
 import com.mike.authservice.model.User;
 import com.mike.authservice.repository.UserRepository;
+import com.mike.authservice.security.JwtService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -19,9 +20,12 @@ public class AuthService {
 
     private final PasswordEncoder passwordEncoder;
 
-    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder){
+    private final JwtService jwtService;
+
+    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService){
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
     }
 
     public ResponseEntity<AuthResponse> register(RegisterRequest request) {
@@ -62,7 +66,9 @@ public class AuthService {
                     .body(new AuthResponse("invalid credentials"));
         }
 
+        String token = jwtService.generateToken(user.getEmail());
+
         return ResponseEntity.ok(
-                new AuthResponse("Login successful"));
+                new AuthResponse(token));
     }
 }

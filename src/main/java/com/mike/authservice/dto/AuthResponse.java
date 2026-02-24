@@ -2,16 +2,17 @@ package com.mike.authservice.dto;
 
     public class AuthResponse{
 
-        private String message;
+        private String token;
 
         public AuthResponse(){
         }
 
-        public AuthResponse(String message){
-            this.message = message;
+        public AuthResponse(String token){
+
+            this.token = token;
         }
 
-        public String getMessage(){
-            return message;
+        public String getToken(){
+            return token;
         }
     }

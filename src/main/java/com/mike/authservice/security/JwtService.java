@@ -12,19 +12,12 @@ import java.util.Date;
 @Service
 public class JwtService {
 
-    private final Key secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+    private final String SECRET_KEY = "VGhpcy1pcy1hLXZIcnktbG9uZy1zZWNyZXQta2v5LWZvci1qc3dOLXRIc3RpbmctMTIzNDU2";
 
-    private static final long EXPIRATION_TIME = 1000*60*60;
+    private final long expirationTime;
 
-    private final String SECRET_KEY = "you-very-secret-key-that-is-long-enogh";
-
-    public String extractUsername(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(secretKey)
-                .build()
-                .parseClaimsJws(token)
-                .getBody()
-                .getSubject();
+    public JwtService(long expirationTime) {
+        this.expirationTime = expirationTime;
     }
 
     private Key getSignInKey() {
@@ -32,10 +25,29 @@ public class JwtService {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
+    public String generateToken(String email) {
+
+        return Jwts.builder()
+                .setSubject(email)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + expirationTime))
+                .signWith(getSignInKey(), SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    public String extractUsername(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(getSignInKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .getSubject();
+    }
+
     public boolean isTokenValid(String token) {
         try {
             Jwts.parserBuilder()
-                    .setSigningKey(secretKey)
+                    .setSigningKey(getSignInKey())
                     .build()
                     .parseClaimsJws(token);
 
@@ -43,15 +55,5 @@ public class JwtService {
         } catch (Exception e) {
             return false;
         }
-    }
-
-    public String generateToken(String email) {
-
-        return Jwts.builder()
-                .setSubject(email)
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
-                .signWith(secretKey)
-                .compact();
     }
 }
